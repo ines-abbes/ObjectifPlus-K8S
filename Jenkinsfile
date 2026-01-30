@@ -95,9 +95,8 @@ pipeline {
                       //  Déployer le backend
                       //chmod 600 ./kubeconfig
                         bat """
-                            copy /Y "${env.KUBECONFIG_FILE}" kubeconfig
-                            icacls secret.env /inheritance:r /grant jenkins:(R,W)
-                        
+                            copy /Y "${env.KUBECONFIG_FILE}" ./kubeconfig
+                                                    
                             set KUBECONFIG=./kubeconfig
                             
                             kubectl apply -f Manifests/express-deploy.yaml -n %K8S_NAMESPACE%
