@@ -106,7 +106,6 @@ pipeline {
                             
                             kubectl apply -f Manifests/express-deploy.yaml -n %K8S_NAMESPACE%
                             
-                            Attendre le déploiement
                         """
                         
                       //  Attendre 30 secondes
