@@ -92,7 +92,7 @@ pipeline {
                             export KUBECONFIG=./kubeconfig
                             
                             # Appliquer les manifests
-                            kubectl apply -f Manifests-k8s/spring-deploy.yaml -n %K8S_NAMESPACE%
+                            kubectl apply -f Manifests/express-deploy.yaml -n %K8S_NAMESPACE%
                             
                             # Attendre le déploiement
                         """
@@ -103,7 +103,7 @@ pipeline {
                       //  Déployer le frontend
                         bat """
                             export KUBECONFIG=./kubeconfig
-                            kubectl apply -f Manifests-k8s/angular-deploy.yaml -n %K8S_NAMESPACE%
+                            kubectl apply -f Manifests/react-deploy.yaml -n %K8S_NAMESPACE%
                         """
                         
                         // Vérification finale

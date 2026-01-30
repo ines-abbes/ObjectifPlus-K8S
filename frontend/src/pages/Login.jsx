@@ -61,7 +61,7 @@ function Login() {
         <h1>
           <FaSignInAlt /> Connexion
         </h1>
-        <p>Connectez-vous pour commencer à définir vos objectifs</p>
+        <p>Connectez-vous madame pour commencer à définir vos objectifs</p>
       </section>
 
       <section className='form'>
