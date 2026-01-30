@@ -76,13 +76,13 @@ pipeline {
         stage('Push Docker Image - Frontend') {
             steps {
                 script {
-                    {
+                    
                         bat """
                             echo "%DOCKERHUB_PASS%" | docker login -u "%DOCKERHUB_USER%" --password-stdin
                             docker push %DOCKERHUB_USER%/%frontendimage%:%FRONTEND_TAG%
                             
                         """
-                    }
+                    
                 }
             }
         }
