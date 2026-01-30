@@ -4,13 +4,12 @@ pipeline {
     // tools {
     //     maven 'maven384'
     // }
-    agent { label 'linux' }
 
     environment {
         // Variables pour les images Docker
         DOCKERHUB_USER = "inesabbes"
         backendimage = "objplus-backend-img"
-        frontendimage = "objplus-frontkend-img"     
+        frontendimage = "objplus-frontend-img"     
         
         // Tags d'images
         BACKEND_TAG = "latest"
@@ -20,18 +19,30 @@ pipeline {
         backendF = "backend"
         frontendF = "frontend"
 
-        GIT_REPO = "objplus-backend-img"
+        GIT_REPO = "https://github.com/ines-abbes/ObjectifPlus-K8S.git"
         
         // Variables pour Minikube
         K8S_NAMESPACE = "objplus"
     }
 
     stages {
+
+        stage('Checkout') {
+            steps {
+                echo "==> Récupération du code source depuis GitHub"
+
+                /* Clone le repo avec tes identifiants Jenkins ''
+                   - branch: mets 'main' ou 'master' selon ta branche */
+                    git branch: 'master',
+                    credentialsId: 'github-cred',
+                    url: "${GIT_REPO}"
+                }
+        }
         stage('Build Docker Image - Backend') {
             steps {
                 echo "==> Build de l'image Docker backend"
-                sh """
-                    docker build -t ${backendimage}:${BACKEND_TAG} ${backendF}
+                bat """
+                    docker build -t ${backendimage}:latest ${backendF}
                 """
             }
         }
@@ -40,15 +51,14 @@ pipeline {
             steps {
                 script {
                     withCredentials([usernamePassword(
-                        credentialsId: '',
+                        credentialsId: 'dockerhub-cred',
                         usernameVariable: 'DOCKERHUB_USER',
                         passwordVariable: 'DOCKERHUB_PASS'
                     )]) {
-                        sh """
-                            echo "${DOCKERHUB_PASS}" | docker login -u "${DOCKERHUB_USER}" --password-stdin
-                            docker push ${backendimage}:${BACKEND_TAG}
-                            docker logout
-                        """
+                        bat """
+                            echo %DOCKERHUB_PASS% | docker login -u %DOCKERHUB_USER% --password-stdin
+                            docker push ${env.DOCKERHUB_USER}/${env.backendimage}:latest                        
+                            """
                     }
                 }
             }
@@ -57,8 +67,8 @@ pipeline {
         stage('Build Docker Image - Frontend') {
             steps {
                 echo "==> Build de l'image Docker frontend"
-                sh """
-                    docker build -t ${frontendimage}:${FRONTEND_TAG} ${frontendF}
+                bat """
+                     docker build -t ${frontendimage}:latest ${frontendF}
                 """
             }
         }
@@ -66,17 +76,13 @@ pipeline {
         stage('Push Docker Image - Frontend') {
             steps {
                 script {
-                    withCredentials([usernamePassword(
-                        credentialsId: '',
-                        usernameVariable: 'DOCKERHUB_USER',
-                        passwordVariable: 'DOCKERHUB_PASS'
-                    )]) {
-                        sh """
-                            echo "${DOCKERHUB_PASS}" | docker login -u "${DOCKERHUB_USER}" --password-stdin
-                            docker push ${frontendimage}:${FRONTEND_TAG}
-                            docker logout
+                    
+                        bat """
+                            echo "%DOCKERHUB_PASS%" | docker login -u "%DOCKERHUB_USER%" --password-stdin
+                            docker push %DOCKERHUB_USER%/%frontendimage%:%FRONTEND_TAG%
+                            
                         """
-                    }
+                    
                 }
             }
         }
@@ -85,35 +91,34 @@ pipeline {
             steps {
                 script {
                     // Utiliser les credentials kubeconfig portable
-                    withCredentials([file(credentialsId: '', variable: 'KUBECONFIG_FILE')]) {
+                    withCredentials([file(credentialsId: 'minikube-kubeconfig', variable: 'KUBECONFIG_FILE')]) {
                       //  Déployer le backend
-                        sh """
-                            cp ${KUBECONFIG_FILE} ./kubeconfig
-                            chmod 600 ./kubeconfig
-                            export KUBECONFIG=./kubeconfig
+                      //chmod 600 ./kubeconfig
+                        bat """
+                            copy /Y "${env.KUBECONFIG_FILE}" kubeconfig
                             
-                            # Appliquer les manifests
-                            kubectl apply -f Manifests-k8s/spring-deploy.yaml -n ${K8S_NAMESPACE}
+                            set KUBECONFIG=./kubeconfig
                             
-                            # Attendre le déploiement
+                            kubectl apply -f Manifests/express-deploy.yaml -n %K8S_NAMESPACE%
+                            
                         """
                         
                       //  Attendre 30 secondes
                        sleep 30
                         
                       //  Déployer le frontend
-                        sh """
+                        bat """
                             export KUBECONFIG=./kubeconfig
-                            kubectl apply -f Manifests-k8s/angular-deploy.yaml -n ${K8S_NAMESPACE}
+                            kubectl apply -f Manifests/react-deploy.yaml -n %K8S_NAMESPACE%
                         """
                         
                         // Vérification finale
-                        sh """
+                        bat """
                             export KUBECONFIG=./kubeconfig
                             echo "=== Pods ==="
-                            kubectl get pods -n ${K8S_NAMESPACE}
+                            kubectl get pods -n %K8S_NAMESPACE%
                             echo "=== Services ==="
-                            kubectl get services -n ${K8S_NAMESPACE}
+                            kubectl get services -n %K8S_NAMESPACE%
                         """
                     }
                 }
@@ -125,7 +130,7 @@ pipeline {
         always {
             echo "Pipeline terminé."
             // Nettoyage du kubeconfig temporaire
-            sh 'rm -f ./kubeconfig'
+            //bat 'rm -f ./kubeconfig'
         }
     }
 }
