@@ -76,11 +76,7 @@ pipeline {
         stage('Push Docker Image - Frontend') {
             steps {
                 script {
-                    withCredentials([usernamePassword(
-                        credentialsId: 'dockerhub-cred',
-                        usernameVariable: 'DOCKERHUB_USER',
-                        passwordVariable: 'DOCKERHUB_PASS'
-                    )]) {
+                    {
                         bat """
                             echo "%DOCKERHUB_PASS%" | docker login -u "%DOCKERHUB_USER%" --password-stdin
                             docker push %DOCKERHUB_USER%/%frontendimage%:%FRONTEND_TAG%
