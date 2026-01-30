@@ -99,14 +99,13 @@ pipeline {
                     withCredentials([file(credentialsId: 'minikube-kubeconfig', variable: 'KUBECONFIG_FILE')]) {
                       //  Déployer le backend
                         bat """
-                            cp %KUBECONFIG_FILE% ./kubeconfig
+                            copy %KUBECONFIG_FILE% ./kubeconfig
                             chmod 600 ./kubeconfig
-                            export KUBECONFIG=./kubeconfig
+                            set KUBECONFIG=./kubeconfig
                             
-                            # Appliquer les manifests
                             kubectl apply -f Manifests/express-deploy.yaml -n %K8S_NAMESPACE%
                             
-                            # Attendre le déploiement
+                            Attendre le déploiement
                         """
                         
                       //  Attendre 30 secondes
