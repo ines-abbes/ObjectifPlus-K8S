@@ -42,7 +42,7 @@ pipeline {
             steps {
                 echo "==> Build de l'image Docker backend"
                 bat """
-                    docker build -t %backendimage%:latest %backendF%
+                    docker build -t ${backendimage}:latest ${backendF}
                 """
             }
         }
@@ -56,8 +56,8 @@ pipeline {
                         passwordVariable: 'DOCKERHUB_PASS'
                     )]) {
                         bat """
-                            echo "%DOCKERHUB_PASS%" | docker login -u "%DOCKERHUB_USER%" --password-stdin
-                            docker push %backendimage%:%BACKEND_TAG%
+                            echo %DOCKERHUB_PASS% | docker login -u %DOCKERHUB_USER% --password-stdin
+                            docker push %DOCKERHUB_USER%/%backendimage%:latest
                             docker logout
                         """
                     }
@@ -69,7 +69,7 @@ pipeline {
             steps {
                 echo "==> Build de l'image Docker frontend"
                 bat """
-                    docker build -t %frontendimage%:%FRONTEND_TAG% %frontendF%
+                     docker build -t ${frontendimage}:latest ${frontendF}
                 """
             }
         }
