@@ -99,7 +99,7 @@ pipeline {
                                                     
                             set KUBECONFIG=./kubeconfig
                             
-                            kubectl apply -f Manifests/express-deploy.yaml -n %K8S_NAMESPACE%
+                            kubectl apply -f Manifests/express-deploy.yaml -n %K8S_NAMESPACE% --validate=false
                             
                         """
                         
