@@ -100,7 +100,7 @@ pipeline {
                       //  Déployer le backend
                       //chmod 600 ./kubeconfig
                         bat """
-                            copy ${KUBECONFIG_FILE} ./kubeconfig
+                            copy /Y "${env.KUBECONFIG_FILE}" kubeconfig
                             
                             set KUBECONFIG=./kubeconfig
                             
