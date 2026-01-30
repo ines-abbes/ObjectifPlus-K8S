@@ -8,8 +8,8 @@ pipeline {
     environment {
         // Variables pour les images Docker
         DOCKERHUB_USER = "inesabbes"
-        backendimage = "%DOCKERHUB_USER%/objplus-backend-img"
-        frontendimage = "%DOCKERHUB_USER%/objplus-frontend-img"     
+        backendimage = "objplus-backend-img"
+        frontendimage = "objplus-frontend-img"     
         
         // Tags d'images
         BACKEND_TAG = "latest"
