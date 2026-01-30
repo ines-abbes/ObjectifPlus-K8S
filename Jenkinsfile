@@ -26,6 +26,18 @@ pipeline {
     }
 
     stages {
+
+        stage('Checkout') {
+            steps {
+                echo "==> Récupération du code source depuis GitHub"
+
+                /* Clone le repo avec tes identifiants Jenkins ''
+                   - branch: mets 'main' ou 'master' selon ta branche */
+                    git branch: 'master',
+                    credentialsId: 'github-cred',
+                    url: "%GIT_REPO%"
+                }
+        }
         stage('Build Docker Image - Backend') {
             steps {
                 echo "==> Build de l'image Docker backend"
