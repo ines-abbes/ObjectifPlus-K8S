@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: react-deploy # Nom du déploiement pour l'application Angular
+  namespace: objplus
+  labels:
+    app: react-app  # Étiquette permettant d'identifier les ressources liées à cette application
+spec:
+  replicas: 2  # Nombre de réplicas (2 pods pour assurer la haute disponibilité)
+  selector:
+    matchLabels:
+      app: react-app  # Sélection des pods correspondant à ce label
+  template:
+    metadata:
+      labels:
+        app: react-app  # Étiquette appliquée aux pods pour les associer au Service
+    spec:
+      containers:
+      - name: react-app
+        image: inesabbes/objplus-frontend-img:latest # Image Docker de l'application Angular
+        resources:  # Allocation des ressources pour éviter une consommation excessive
+          limits:
+            memory: "350Mi"  # Limite de mémoire à 350 Mo
+            cpu: "0.3"  # Limite de CPU à 0.3 vCPU
+          requests:
+            memory: "150Mi"  # Requête minimale de mémoire (150 Mo)
+            cpu: "0.1"  # Requête minimale de CPU (0.1 vCPU)
+        ports:
+        - containerPort: 80  # Port sur lequel l'application react est servie
+      # imagePullSecrets:          
+      #   - name: regcred         
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: react-svc  # Nom du service exposant l'application react
+  namespace: objplus
+spec:
+  selector:
+    app:  react-app # Associe ce service aux pods ayant ce label
+  ports:
+    - protocol: TCP
+      port: 80  # Port sur lequel le service est exposé
+      targetPort: 80  # Port du conteneur react
+  type: ClusterIP  # Par défaut, le service est accessible uniquement à l'intérieur du cluster

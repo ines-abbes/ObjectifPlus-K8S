@@ -1,0 +1,61 @@
+
+services:
+  mongo:
+    image: mongo:latest
+    container_name: mongo
+    volumes:
+      - mongo_data:/data/db
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin
+    networks:
+      - db
+  
+  mongo-express:
+    image: mongo-express:latest
+    container_name: mongo-express
+    ports:
+      - "8082:8081"
+    environment:
+      ME_CONFIG_MONGODB_URL: mongodb://admin:admin@mongo:27017/
+      ME_CONFIG_BASICAUTH_ENABLED: "true"
+      ME_CONFIG_BASICAUTH_USERNAME: iness
+      ME_CONFIG_BASICAUTH_PASSWORD: iness123
+    depends_on:
+      - mongo
+    networks:
+      - db
+
+  backend:
+    build: ./backend
+    container_name: backend-cont
+    ports:
+      - "5000:5000"
+    environment:
+      NODE_ENV: production
+      MONGO_URI: mongodb://admin:admin@mongo:27017/mern_db?authSource=admin
+      JWT_SECRET: "abc123456789"
+    depends_on:
+      - mongo
+    networks:
+      - dev
+      - db
+
+  frontend:
+    build: ./frontend
+    container_name: frontend-cont
+    ports:
+      - "85:80"
+    depends_on:
+      - backend
+    networks:
+      - dev
+
+volumes:
+  mongo_data:
+
+networks:
+  dev:
+  db:

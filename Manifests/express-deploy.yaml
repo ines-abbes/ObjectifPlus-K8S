@@ -1,0 +1,73 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: express-deploy  # Nom du déploiement pour l'application Spring Boot
+  namespace: objplus
+  labels:
+    app: express-app  # Label pour identifier l'application
+spec:
+  replicas: 2  # Nombre de réplicas pour assurer la haute disponibilité
+  selector:
+    matchLabels:
+      app: express-app   # Sélection des pods correspondant à ce label
+  template:
+    metadata:
+      labels:
+        app: express-app  # Étiquette appliquée aux pods pour le service
+    spec:
+      containers:
+      - name: express-app
+        image: inesabbes/objplus-backend-img:latest  # Image Docker de l'application express.js
+        resources:  # Allocation des ressources pour éviter la surconsommation
+          limits:
+            memory: "400Mi"  # Limite de mémoire à 400 Mo
+            cpu: "0.4"  # Limite d'utilisation du CPU à 0.4 vCPU
+          requests:
+            memory: "250Mi"  # Minimum de mémoire demandé (250 Mo)
+            cpu: "0.2"  # Minimum de CPU demandé (0.2 vCPU)
+        ports:
+        - containerPort: 5000  # Port sur lequel l'application express écoute
+        env:
+        - name: NODE_ENV 
+          value: production
+        - name: MONGO_USER  # Mot de passe root pour mongo
+          valueFrom:
+            secretKeyRef:
+              name: exp-secret  # Référence au Secret contenant le mot de passe root
+              key: root-username
+        - name: MONGO_PASS  # Mot de passe root pour mongo
+          valueFrom:
+            secretKeyRef:
+              name: exp-secret  # Référence au Secret contenant le mot de passe root
+              key: root-password
+        - name: JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: exp-secret  # Référence au Secret contenant le mot de passe root
+              key: teken-secret
+        - name: MONGO_HOST  
+          valueFrom: 
+            configMapKeyRef:
+              name: exp-cm  # Référence au ConfigMap contenant l'hôte mongodb
+              key:  db-host
+        - name: MONGO_DB  
+          valueFrom:
+            configMapKeyRef:
+              name: exp-cm  # Référence au ConfigMap contenant le nom de la base de données
+              key: db-name
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: express-serv  # Nom du service exposant l'application Express
+  namespace: objplus
+spec:
+  selector:
+    app: express-app  # Sélectionne les pods correspondant à ce label
+  ports:
+    - protocol: TCP
+      port: 5000  # Port exposé par le service
+      targetPort:  5000 # Port du conteneur Express
+  type: ClusterIP  # Par défaut, le service est accessible uniquement à l'intérieur du cluster
