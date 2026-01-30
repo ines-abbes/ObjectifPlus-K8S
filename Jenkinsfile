@@ -98,9 +98,10 @@ pipeline {
                     // Utiliser les credentials kubeconfig portable
                     withCredentials([file(credentialsId: 'minikube-kubeconfig', variable: 'KUBECONFIG_FILE')]) {
                       //  Déployer le backend
+                      //chmod 600 ./kubeconfig
                         bat """
-                            copy %KUBECONFIG_FILE% ./kubeconfig
-                            chmod 600 ./kubeconfig
+                            copy ${KUBECONFIG_FILE} ./kubeconfig
+                            
                             set KUBECONFIG=./kubeconfig
                             
                             kubectl apply -f Manifests/express-deploy.yaml -n %K8S_NAMESPACE%
