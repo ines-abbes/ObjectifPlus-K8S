@@ -84,7 +84,7 @@ pipeline {
                     )]) {
                         bat """
                             echo "%DOCKERHUB_PASS%" | docker login -u "%DOCKERHUB_USER%" --password-stdin
-                            docker push %frontendimage%:%FRONTEND_TAG%
+                            docker push %DOCKERHUB_USER%/%frontendimage%:%FRONTEND_TAG%
                             docker logout
                         """
                     }
