@@ -57,7 +57,9 @@ pipeline {
                     )]) {
                         bat """
                             echo %DOCKERHUB_PASS% | docker login -u %DOCKERHUB_USER% --password-stdin
-                            docker push %DOCKERHUB_USER%/%backendimage%:latest
+                           bat """
+                                docker push ${env.DOCKERHUB_USER}/${env.backendimage}:latest
+"""
                             
                         """
                     }
